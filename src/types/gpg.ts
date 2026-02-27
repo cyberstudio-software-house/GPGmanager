@@ -19,7 +19,19 @@ export interface GenerateKeyParams {
   passphrase: string;
 }
 
-export type ActiveView = 'keys' | 'encrypt' | 'decrypt';
+export type ActiveView = 'keys' | 'encrypt' | 'decrypt' | 'settings';
+
+export type GpgMode = 'system' | 'wsl' | 'custom';
+
+export interface AppConfig {
+  gpg_mode: GpgMode;
+  custom_path: string;
+}
+
+export interface DetectResult {
+  system_available: boolean;
+  wsl_available: boolean;
+}
 
 export interface HistoryItem {
   id: number;

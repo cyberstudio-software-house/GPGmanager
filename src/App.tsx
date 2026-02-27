@@ -5,6 +5,7 @@ import { ActiveView } from './types/gpg';
 import KeyList from './components/KeyList';
 import EncryptPanel from './components/EncryptPanel';
 import DecryptPanel from './components/DecryptPanel';
+import SettingsPanel from './components/SettingsPanel';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,6 +24,7 @@ function AppContent() {
     { id: 'keys', label: t('nav.keys'), icon: '⚿' },
     { id: 'encrypt', label: t('nav.encrypt'), icon: '🔒' },
     { id: 'decrypt', label: t('nav.decrypt'), icon: '🔓' },
+    { id: 'settings', label: t('nav.settings'), icon: '⚙' },
   ];
 
   const toggleLang = () => {
@@ -65,6 +67,7 @@ function AppContent() {
         {activeView === 'keys' && <KeyList />}
         {activeView === 'encrypt' && <EncryptPanel />}
         {activeView === 'decrypt' && <DecryptPanel />}
+        {activeView === 'settings' && <SettingsPanel />}
       </main>
     </div>
   );

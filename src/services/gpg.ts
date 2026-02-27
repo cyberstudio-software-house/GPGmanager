@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { GpgKey, GenerateKeyParams, HistoryItem } from '../types/gpg';
+import { GpgKey, GenerateKeyParams, HistoryItem, AppConfig, DetectResult } from '../types/gpg';
 
 export const gpgService = {
   listKeys: () => invoke<GpgKey[]>('list_keys'),
@@ -35,4 +35,11 @@ export const gpgService = {
 
   deleteHistoryItem: (id: number) =>
     invoke<void>('delete_history_item', { id }),
+
+  detectGpg: () => invoke<DetectResult>('detect_gpg'),
+
+  getConfig: () => invoke<AppConfig>('get_config'),
+
+  saveConfig: (gpg_mode: string, custom_path: string) =>
+    invoke<void>('save_config', { gpgMode: gpg_mode, customPath: custom_path }),
 };

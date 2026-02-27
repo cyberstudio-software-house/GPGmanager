@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::io::Write;
-use std::process::{Command, Stdio};
+use std::process::Stdio;
+use tauri::State;
+
+use crate::gpg_config::{ConfigState, make_gpg_cmd};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GpgKey {
@@ -78,9 +81,9 @@ fn parse_colons_output(output: &str, has_secret: bool) -> Vec<GpgKey> {
 }
 
 #[tauri::command]
-pub fn list_keys() -> Result<Vec<GpgKey>, String> {
-    let output = Command::new("gpg")
-        .args(["--list-keys", "--with-colons", "--with-fingerprint"])
+pub fn list_keys(state: State<ConfigState>) -> Result<Vec<GpgKey>, String> {
+    let config = state.0.lock().unwrap().clone();
+    let output = make_gpg_cmd(&config, &["--list-keys", "--with-colons", "--with-fingerprint"])
         .output()
         .map_err(|e| format!("Failed to run gpg: {}", e))?;
 
@@ -89,11 +92,14 @@ pub fn list_keys() -> Result<Vec<GpgKey>, String> {
 }
 
 #[tauri::command]
-pub fn list_secret_keys() -> Result<Vec<GpgKey>, String> {
-    let output = Command::new("gpg")
-        .args(["--list-secret-keys", "--with-colons", "--with-fingerprint"])
-        .output()
-        .map_err(|e| format!("Failed to run gpg: {}", e))?;
+pub fn list_secret_keys(state: State<ConfigState>) -> Result<Vec<GpgKey>, String> {
+    let config = state.0.lock().unwrap().clone();
+    let output = make_gpg_cmd(
+        &config,
+        &["--list-secret-keys", "--with-colons", "--with-fingerprint"],
+    )
+    .output()
+    .map_err(|e| format!("Failed to run gpg: {}", e))?;
 
     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
     Ok(parse_colons_output(&stdout, true))
@@ -101,6 +107,7 @@ pub fn list_secret_keys() -> Result<Vec<GpgKey>, String> {
 
 #[tauri::command]
 pub fn generate_key(
+    state: State<ConfigState>,
     name: String,
     email: String,
     key_type: String,
@@ -108,7 +115,7 @@ pub fn generate_key(
     passphrase: String,
 ) -> Result<String, String> {
     let key_type_str = match key_type.as_str() {
-        "rsa" => format!("RSA"),
+        "rsa" => "RSA".to_string(),
         "ed25519" => "EdDSA".to_string(),
         _ => return Err("Unsupported key type".to_string()),
     };
@@ -124,8 +131,8 @@ pub fn generate_key(
         key_type_str, length_line, name, email, passphrase
     );
 
-    let mut child = Command::new("gpg")
-        .args(["--batch", "--gen-key"])
+    let config = state.0.lock().unwrap().clone();
+    let mut child = make_gpg_cmd(&config, &["--batch", "--gen-key"])
         .stdin(Stdio::piped())
         .stderr(Stdio::piped())
         .stdout(Stdio::piped())
@@ -152,9 +159,9 @@ pub fn generate_key(
 }
 
 #[tauri::command]
-pub fn import_key(key_data: String) -> Result<String, String> {
-    let mut child = Command::new("gpg")
-        .args(["--import"])
+pub fn import_key(state: State<ConfigState>, key_data: String) -> Result<String, String> {
+    let config = state.0.lock().unwrap().clone();
+    let mut child = make_gpg_cmd(&config, &["--import"])
         .stdin(Stdio::piped())
         .stderr(Stdio::piped())
         .stdout(Stdio::piped())
@@ -181,15 +188,19 @@ pub fn import_key(key_data: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn export_key(fingerprint: String, secret: bool) -> Result<String, String> {
+pub fn export_key(
+    state: State<ConfigState>,
+    fingerprint: String,
+    secret: bool,
+) -> Result<String, String> {
     let export_arg = if secret {
         "--export-secret-keys"
     } else {
         "--export"
     };
 
-    let output = Command::new("gpg")
-        .args(["--armor", export_arg, &fingerprint])
+    let config = state.0.lock().unwrap().clone();
+    let output = make_gpg_cmd(&config, &["--armor", export_arg, &fingerprint])
         .output()
         .map_err(|e| format!("Failed to run gpg: {}", e))?;
 
@@ -201,17 +212,20 @@ pub fn export_key(fingerprint: String, secret: bool) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn delete_key(fingerprint: String, secret: bool) -> Result<(), String> {
+pub fn delete_key(
+    state: State<ConfigState>,
+    fingerprint: String,
+    secret: bool,
+) -> Result<(), String> {
+    let config = state.0.lock().unwrap().clone();
+
     if secret {
-        let output = Command::new("gpg")
-            .args([
-                "--batch",
-                "--yes",
-                "--delete-secret-keys",
-                &fingerprint,
-            ])
-            .output()
-            .map_err(|e| format!("Failed to run gpg: {}", e))?;
+        let output = make_gpg_cmd(
+            &config,
+            &["--batch", "--yes", "--delete-secret-keys", &fingerprint],
+        )
+        .output()
+        .map_err(|e| format!("Failed to run gpg: {}", e))?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr).to_string();
@@ -219,8 +233,7 @@ pub fn delete_key(fingerprint: String, secret: bool) -> Result<(), String> {
         }
     }
 
-    let output = Command::new("gpg")
-        .args(["--batch", "--yes", "--delete-keys", &fingerprint])
+    let output = make_gpg_cmd(&config, &["--batch", "--yes", "--delete-keys", &fingerprint])
         .output()
         .map_err(|e| format!("Failed to run gpg: {}", e))?;
 

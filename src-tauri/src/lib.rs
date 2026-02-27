@@ -1,8 +1,14 @@
 mod commands;
+mod gpg_config;
 
 use commands::crypto::{decrypt_message, encrypt_message};
 use commands::history::{add_history_item, delete_history_item, get_history, init_db};
 use commands::keys::{delete_key, export_key, generate_key, import_key, list_keys, list_secret_keys};
+use commands::settings::{detect_gpg, get_config, save_config};
+use gpg_config::{ConfigState, read_config};
+
+use std::sync::Mutex;
+use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -13,6 +19,8 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            let config = read_config(&app.handle().clone());
+            app.manage(ConfigState(Mutex::new(config)));
             init_db(&app.handle().clone()).map_err(|e| e.to_string())?;
             Ok(())
         })
@@ -28,6 +36,9 @@ pub fn run() {
             add_history_item,
             get_history,
             delete_history_item,
+            detect_gpg,
+            get_config,
+            save_config,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

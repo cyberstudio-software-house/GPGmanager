@@ -1,23 +1,33 @@
 use std::io::Write;
-use std::process::{Command, Stdio};
+use std::process::Stdio;
+use tauri::State;
 use zeroize::Zeroize;
 
+use crate::gpg_config::{ConfigState, make_gpg_cmd};
+
 #[tauri::command]
-pub fn encrypt_message(plaintext: String, recipient_fingerprint: String) -> Result<String, String> {
-    let mut child = Command::new("gpg")
-        .args([
+pub fn encrypt_message(
+    state: State<ConfigState>,
+    plaintext: String,
+    recipient_fingerprint: String,
+) -> Result<String, String> {
+    let config = state.0.lock().unwrap().clone();
+    let mut child = make_gpg_cmd(
+        &config,
+        &[
             "--armor",
             "--encrypt",
             "--recipient",
             &recipient_fingerprint,
             "--trust-model",
             "always",
-        ])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|e| format!("Failed to start gpg: {}", e))?;
+        ],
+    )
+    .stdin(Stdio::piped())
+    .stdout(Stdio::piped())
+    .stderr(Stdio::piped())
+    .spawn()
+    .map_err(|e| format!("Failed to start gpg: {}", e))?;
 
     if let Some(stdin) = child.stdin.take() {
         let mut stdin = stdin;
@@ -38,23 +48,30 @@ pub fn encrypt_message(plaintext: String, recipient_fingerprint: String) -> Resu
 }
 
 #[tauri::command]
-pub fn decrypt_message(ciphertext: String, mut passphrase: String) -> Result<String, String> {
+pub fn decrypt_message(
+    state: State<ConfigState>,
+    ciphertext: String,
+    mut passphrase: String,
+) -> Result<String, String> {
     let input = format!("{}\n{}", passphrase, ciphertext);
     passphrase.zeroize();
 
-    let mut child = Command::new("gpg")
-        .args([
+    let config = state.0.lock().unwrap().clone();
+    let mut child = make_gpg_cmd(
+        &config,
+        &[
             "--decrypt",
             "--pinentry-mode",
             "loopback",
             "--passphrase-fd",
             "0",
-        ])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|e| format!("Failed to start gpg: {}", e))?;
+        ],
+    )
+    .stdin(Stdio::piped())
+    .stdout(Stdio::piped())
+    .stderr(Stdio::piped())
+    .spawn()
+    .map_err(|e| format!("Failed to start gpg: {}", e))?;
 
     if let Some(stdin) = child.stdin.take() {
         let mut stdin = stdin;
