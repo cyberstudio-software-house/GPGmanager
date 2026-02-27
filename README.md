@@ -1,49 +1,49 @@
 # GPGmgr
 
-Desktopowy menedżer kluczy GPG zbudowany na Tauri 2 + React + TypeScript.
+A desktop GPG key manager built with Tauri 2 + React + TypeScript.
 
-## Wymagania
+## Requirements
 
 - [Node.js](https://nodejs.org/) (v18+)
 - [Rust](https://rustup.rs/)
-- [GPG](https://gnupg.org/) zainstalowany i dostępny w `PATH`
+- [GPG](https://gnupg.org/) installed and available in `PATH`
 
-## Uruchomienie
+## Running
 
 ```bash
 npm install
 npm run tauri dev
 ```
 
-### Budowanie wersji produkcyjnej
+### Production build
 
 ```bash
 npm run tauri build
 ```
 
-## Kluczowe funkcje
+## Key Features
 
-### Zarządzanie kluczami
-- Przeglądanie publicznych i prywatnych kluczy GPG z keyring systemu
-- Generowanie nowych kluczy (RSA 2048/4096, Ed25519)
-- Import kluczy z formatu ASCII armor
-- Eksport kluczy (publicznych i prywatnych)
-- Usuwanie kluczy
+### Key Management
+- Browse public and private GPG keys from the system keyring
+- Generate new keys (RSA 2048/4096, Ed25519)
+- Import keys from ASCII armor format
+- Export keys (public and private)
+- Delete keys
 
-### Szyfrowanie
-- Szyfrowanie wiadomości tekstowych dla wybranego odbiorcy (po fingerprint)
-- Wynik w formacie ASCII armor
+### Encryption
+- Encrypt text messages for a selected recipient (by fingerprint)
+- Output in ASCII armor format
 
-### Deszyfrowanie
-- Deszyfrowanie wiadomości zaszyfrowanych GPG z podaniem passphrase
-- Historia zdeszyfrownaych wiadomości przechowywana lokalnie w SQLite
+### Decryption
+- Decrypt GPG-encrypted messages with passphrase input
+- Decryption history stored locally in SQLite
 
-## Stos technologiczny
+## Tech Stack
 
-| Warstwa | Technologia |
-|---------|-------------|
+| Layer | Technology |
+|-------|------------|
 | Frontend | React 19, TypeScript, Vite |
 | Backend | Rust (Tauri 2) |
-| Stan | TanStack Query, Zustand |
-| Baza danych | SQLite (rusqlite) |
-| Kryptografia | GPG (wywołania systemowe) |
+| State | TanStack Query, Zustand |
+| Database | SQLite (rusqlite) |
+| Cryptography | GPG (system calls) |
