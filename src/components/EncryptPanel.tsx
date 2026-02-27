@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { gpgService } from '../services/gpg';
 import { GpgKey } from '../types/gpg';
 
 export default function EncryptPanel() {
+  const { t } = useTranslation();
   const [plaintext, setPlaintext] = useState('');
   const [selectedKey, setSelectedKey] = useState('');
   const [result, setResult] = useState('');
@@ -22,11 +24,11 @@ export default function EncryptPanel() {
     setResult('');
 
     if (!plaintext.trim()) {
-      setError('Wpisz wiadomość do zaszyfrowania');
+      setError(t('encrypt.errorNoMessage'));
       return;
     }
     if (!selectedKey) {
-      setError('Wybierz klucz odbiorcy');
+      setError(t('encrypt.errorNoKey'));
       return;
     }
 
@@ -35,7 +37,7 @@ export default function EncryptPanel() {
       const encrypted = await gpgService.encryptMessage(plaintext, selectedKey);
       setResult(encrypted);
     } catch (err) {
-      setError(`Błąd szyfrowania: ${err}`);
+      setError(t('encrypt.errorEncrypt', { err }));
     } finally {
       setLoading(false);
     }
@@ -57,20 +59,20 @@ export default function EncryptPanel() {
     <div className="panel-view">
       <div className="view-header">
         <div className="view-title">
-          <span className="prompt-char">$</span> szyfrowanie
+          <span className="prompt-char">$</span> {t('encrypt.title')}
         </div>
       </div>
 
       <div className="panel-content">
         <form onSubmit={handleEncrypt} className="panel-form">
           <div className="form-group">
-            <label className="form-label">odbiorca (klucz publiczny)</label>
+            <label className="form-label">{t('encrypt.labelRecipient')}</label>
             <select
               className="form-select"
               value={selectedKey}
               onChange={(e) => setSelectedKey(e.target.value)}
             >
-              <option value="">-- wybierz klucz --</option>
+              <option value="">{t('encrypt.selectKey')}</option>
               {publicKeys.map((key) => (
                 <option key={key.fingerprint} value={key.fingerprint}>
                   {getKeyLabel(key)}
@@ -80,12 +82,12 @@ export default function EncryptPanel() {
           </div>
 
           <div className="form-group flex-grow">
-            <label className="form-label">wiadomość (plaintext)</label>
+            <label className="form-label">{t('encrypt.labelMessage')}</label>
             <textarea
               className="form-textarea flex-grow"
               value={plaintext}
               onChange={(e) => setPlaintext(e.target.value)}
-              placeholder="Wpisz wiadomość do zaszyfrowania..."
+              placeholder={t('encrypt.placeholderMessage')}
               rows={8}
             />
           </div>
@@ -98,10 +100,10 @@ export default function EncryptPanel() {
               className="btn btn-ghost"
               onClick={() => { setPlaintext(''); setResult(''); setError(''); }}
             >
-              wyczyść
+              {t('encrypt.clear')}
             </button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? <><span className="blink">_</span> szyfrowanie...</> : '🔒 zaszyfruj'}
+              {loading ? <><span className="blink">_</span> {t('encrypt.encrypting')}</> : t('encrypt.submit')}
             </button>
           </div>
         </form>
@@ -110,10 +112,10 @@ export default function EncryptPanel() {
           <div className="result-block">
             <div className="result-header">
               <span className="result-label">
-                <span className="text-green">✓</span> zaszyfrowana wiadomość
+                <span className="text-green">✓</span> {t('encrypt.resultLabel')}
               </span>
               <button className="btn-copy" onClick={handleCopy}>
-                {copied ? '✓ skopiowano' : 'kopiuj'}
+                {copied ? t('encrypt.copied') : t('encrypt.copy')}
               </button>
             </div>
             <textarea

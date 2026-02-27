@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { gpgService } from '../services/gpg';
 import { KeyGenType } from '../types/gpg';
 
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function GenerateKeyForm({ onClose, onSuccess }: Props) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [keyType, setKeyType] = useState<KeyGenType>('ed25519');
@@ -22,12 +24,12 @@ export default function GenerateKeyForm({ onClose, onSuccess }: Props) {
     setError('');
 
     if (passphrase !== confirmPassphrase) {
-      setError('Hasła nie są identyczne');
+      setError(t('generateKey.errorPassphraseMismatch'));
       return;
     }
 
     if (!name.trim() || !email.trim()) {
-      setError('Nazwa i email są wymagane');
+      setError(t('generateKey.errorRequired'));
       return;
     }
 
@@ -36,7 +38,7 @@ export default function GenerateKeyForm({ onClose, onSuccess }: Props) {
       await gpgService.generateKey({ name, email, key_type: keyType, bits, passphrase });
       onSuccess();
     } catch (err) {
-      setError(`Błąd generowania: ${err}`);
+      setError(t('generateKey.errorGenerate', { err }));
     } finally {
       setLoading(false);
     }
@@ -46,13 +48,13 @@ export default function GenerateKeyForm({ onClose, onSuccess }: Props) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <span className="prompt-char">$</span> generuj nowy klucz
+          <span className="prompt-char">$</span> {t('generateKey.title')}
           <button className="btn-icon" onClick={onClose}>✕</button>
         </div>
 
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
-            <label className="form-label">nazwa / identyfikator</label>
+            <label className="form-label">{t('generateKey.labelName')}</label>
             <input
               className="form-input"
               type="text"
@@ -64,7 +66,7 @@ export default function GenerateKeyForm({ onClose, onSuccess }: Props) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">email</label>
+            <label className="form-label">{t('generateKey.labelEmail')}</label>
             <input
               className="form-input"
               type="email"
@@ -76,20 +78,20 @@ export default function GenerateKeyForm({ onClose, onSuccess }: Props) {
 
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">typ klucza</label>
+              <label className="form-label">{t('generateKey.labelKeyType')}</label>
               <select
                 className="form-select"
                 value={keyType}
                 onChange={(e) => setKeyType(e.target.value as KeyGenType)}
               >
-                <option value="ed25519">Ed25519 (zalecany)</option>
-                <option value="rsa">RSA</option>
+                <option value="ed25519">{t('generateKey.optionEd25519')}</option>
+                <option value="rsa">{t('generateKey.optionRsa')}</option>
               </select>
             </div>
 
             {keyType === 'rsa' && (
               <div className="form-group">
-                <label className="form-label">długość klucza (bity)</label>
+                <label className="form-label">{t('generateKey.labelBits')}</label>
                 <select
                   className="form-select"
                   value={bits}
@@ -104,7 +106,7 @@ export default function GenerateKeyForm({ onClose, onSuccess }: Props) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">hasło (passphrase)</label>
+            <label className="form-label">{t('generateKey.labelPassphrase')}</label>
             <input
               className="form-input"
               type="password"
@@ -115,7 +117,7 @@ export default function GenerateKeyForm({ onClose, onSuccess }: Props) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">potwierdź hasło</label>
+            <label className="form-label">{t('generateKey.labelConfirmPassphrase')}</label>
             <input
               className="form-input"
               type="password"
@@ -129,10 +131,10 @@ export default function GenerateKeyForm({ onClose, onSuccess }: Props) {
 
           <div className="modal-actions">
             <button type="button" className="btn btn-ghost" onClick={onClose}>
-              anuluj
+              {t('generateKey.cancel')}
             </button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? <><span className="blink">_</span> generowanie...</> : 'generuj klucz'}
+              {loading ? <><span className="blink">_</span> {t('generateKey.generating')}</> : t('generateKey.submit')}
             </button>
           </div>
         </form>

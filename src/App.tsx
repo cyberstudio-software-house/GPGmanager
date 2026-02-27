@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ActiveView } from './types/gpg';
 import KeyList from './components/KeyList';
@@ -15,13 +16,20 @@ const queryClient = new QueryClient({
 });
 
 function AppContent() {
+  const { t, i18n } = useTranslation();
   const [activeView, setActiveView] = useState<ActiveView>('keys');
 
   const navItems: { id: ActiveView; label: string; icon: string }[] = [
-    { id: 'keys', label: 'klucze', icon: '⚿' },
-    { id: 'encrypt', label: 'szyfrowanie', icon: '🔒' },
-    { id: 'decrypt', label: 'deszyfrowanie', icon: '🔓' },
+    { id: 'keys', label: t('nav.keys'), icon: '⚿' },
+    { id: 'encrypt', label: t('nav.encrypt'), icon: '🔒' },
+    { id: 'decrypt', label: t('nav.decrypt'), icon: '🔓' },
   ];
+
+  const toggleLang = () => {
+    const next = i18n.language === 'en' ? 'pl' : 'en';
+    i18n.changeLanguage(next);
+    localStorage.setItem('lang', next);
+  };
 
   return (
     <div className="app-shell">
@@ -46,6 +54,9 @@ function AppContent() {
         </div>
 
         <div className="sidebar-footer">
+          <button className="lang-toggle" onClick={toggleLang}>
+            {i18n.language === 'en' ? 'EN' : 'PL'}
+          </button>
           <span className="version-tag">v0.1.0</span>
         </div>
       </nav>

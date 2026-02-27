@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { gpgService } from '../services/gpg';
 import { GpgKey } from '../types/gpg';
@@ -7,6 +8,7 @@ import ImportKeyModal from './ImportKeyModal';
 import KeyDetails from './KeyDetails';
 
 export default function KeyList() {
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const [showGenerate, setShowGenerate] = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -38,21 +40,21 @@ export default function KeyList() {
   const formatDate = (timestamp: string) => {
     if (!timestamp) return '—';
     const date = new Date(parseInt(timestamp) * 1000);
-    return date.toLocaleDateString('pl-PL');
+    return date.toLocaleDateString(i18n.language === 'pl' ? 'pl-PL' : 'en-US');
   };
 
   return (
     <div className="key-list-view">
       <div className="view-header">
         <div className="view-title">
-          <span className="prompt-char">$</span> klucze gpg
+          <span className="prompt-char">$</span> {t('keyList.title')}
         </div>
         <div className="header-actions">
           <button className="btn btn-ghost" onClick={() => setShowImport(true)}>
-            <span>↑</span> importuj
+            <span>↑</span> {t('keyList.importBtn')}
           </button>
           <button className="btn btn-primary" onClick={() => setShowGenerate(true)}>
-            <span>+</span> nowy klucz
+            <span>+</span> {t('keyList.newKeyBtn')}
           </button>
         </div>
       </div>
@@ -62,38 +64,38 @@ export default function KeyList() {
           className={`tab ${activeTab === 'public' ? 'tab-active' : ''}`}
           onClick={() => setActiveTab('public')}
         >
-          klucze publiczne <span className="tab-count">{publicKeys.length}</span>
+          {t('keyList.publicTab')} <span className="tab-count">{publicKeys.length}</span>
         </button>
         <button
           className={`tab ${activeTab === 'secret' ? 'tab-active' : ''}`}
           onClick={() => setActiveTab('secret')}
         >
-          klucze prywatne <span className="tab-count">{secretKeys.length}</span>
+          {t('keyList.secretTab')} <span className="tab-count">{secretKeys.length}</span>
         </button>
       </div>
 
       <div className="key-table-container">
         {isLoading ? (
           <div className="loading-state">
-            <span className="blink">_</span> ładowanie kluczy...
+            <span className="blink">_</span> {t('keyList.loading')}
           </div>
         ) : keys.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">⚿</div>
-            <p>brak kluczy w keyring</p>
+            <p>{t('keyList.noKeys')}</p>
             <button className="btn btn-primary" onClick={() => setShowGenerate(true)}>
-              wygeneruj pierwszy klucz
+              {t('keyList.generateFirst')}
             </button>
           </div>
         ) : (
           <table className="key-table">
             <thead>
               <tr>
-                <th>tożsamość</th>
-                <th>typ</th>
-                <th>id klucza</th>
-                <th>utworzony</th>
-                <th>wygaśnięcie</th>
+                <th>{t('keyList.colIdentity')}</th>
+                <th>{t('keyList.colType')}</th>
+                <th>{t('keyList.colKeyId')}</th>
+                <th>{t('keyList.colCreated')}</th>
+                <th>{t('keyList.colExpires')}</th>
                 <th></th>
               </tr>
             </thead>
@@ -129,11 +131,11 @@ export default function KeyList() {
                       className="btn-icon btn-danger"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm(`Usunąć klucz ${key.key_id}?`)) {
+                        if (confirm(t('keyList.confirmDelete', { keyId: key.key_id }))) {
                           deleteMutation.mutate({ fingerprint: key.fingerprint, secret: key.has_secret });
                         }
                       }}
-                      title="Usuń klucz"
+                      title={t('keyList.deleteTitle')}
                     >
                       ✕
                     </button>

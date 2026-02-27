@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { gpgService } from '../services/gpg';
 
 interface Props {
@@ -7,6 +8,7 @@ interface Props {
 }
 
 export default function ImportKeyModal({ onClose, onSuccess }: Props) {
+  const { t } = useTranslation();
   const [keyData, setKeyData] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -16,7 +18,7 @@ export default function ImportKeyModal({ onClose, onSuccess }: Props) {
     setError('');
 
     if (!keyData.trim()) {
-      setError('Wklej dane klucza PGP');
+      setError(t('importKey.errorEmpty'));
       return;
     }
 
@@ -25,7 +27,7 @@ export default function ImportKeyModal({ onClose, onSuccess }: Props) {
       await gpgService.importKey(keyData);
       onSuccess();
     } catch (err) {
-      setError(`Błąd importu: ${err}`);
+      setError(t('importKey.errorImport', { err }));
     } finally {
       setLoading(false);
     }
@@ -35,13 +37,13 @@ export default function ImportKeyModal({ onClose, onSuccess }: Props) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-large" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <span className="prompt-char">$</span> importuj klucz
+          <span className="prompt-char">$</span> {t('importKey.title')}
           <button className="btn-icon" onClick={onClose}>✕</button>
         </div>
 
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
-            <label className="form-label">klucz PGP (ASCII Armor)</label>
+            <label className="form-label">{t('importKey.label')}</label>
             <textarea
               className="form-textarea"
               value={keyData}
@@ -56,10 +58,10 @@ export default function ImportKeyModal({ onClose, onSuccess }: Props) {
 
           <div className="modal-actions">
             <button type="button" className="btn btn-ghost" onClick={onClose}>
-              anuluj
+              {t('importKey.cancel')}
             </button>
             <button type="submit" className="btn btn-primary" disabled={loading || !keyData.trim()}>
-              {loading ? <><span className="blink">_</span> importowanie...</> : 'importuj'}
+              {loading ? <><span className="blink">_</span> {t('importKey.importing')}</> : t('importKey.submit')}
             </button>
           </div>
         </form>

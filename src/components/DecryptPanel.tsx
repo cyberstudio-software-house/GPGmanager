@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { gpgService } from '../services/gpg';
 import { HistoryItem } from '../types/gpg';
 
@@ -12,6 +13,7 @@ function getPreview(ciphertext: string): string {
 }
 
 export default function DecryptPanel() {
+  const { t } = useTranslation();
   const [ciphertext, setCiphertext] = useState('');
   const [passphrase, setPassphrase] = useState('');
   const [result, setResult] = useState('');
@@ -37,7 +39,7 @@ export default function DecryptPanel() {
     setResult('');
 
     if (!ciphertext.trim()) {
-      setError('Wklej zaszyfrowaną wiadomość');
+      setError(t('decrypt.errorEmpty'));
       return;
     }
 
@@ -49,7 +51,7 @@ export default function DecryptPanel() {
       await gpgService.addHistoryItem(ciphertext);
       await loadHistory();
     } catch (err) {
-      setError(`Błąd deszyfrowania: ${err}`);
+      setError(t('decrypt.errorDecrypt', { err }));
     } finally {
       setLoading(false);
     }
@@ -77,7 +79,7 @@ export default function DecryptPanel() {
     <div className="panel-view">
       <div className="view-header">
         <div className="view-title">
-          <span className="prompt-char">$</span> deszyfrowanie
+          <span className="prompt-char">$</span> {t('decrypt.title')}
         </div>
       </div>
 
@@ -85,7 +87,7 @@ export default function DecryptPanel() {
         <div className="panel-content">
           <form onSubmit={handleDecrypt} className="panel-form">
             <div className="form-group flex-grow">
-              <label className="form-label">zaszyfrowana wiadomość (PGP/ASCII Armor)</label>
+              <label className="form-label">{t('decrypt.labelCiphertext')}</label>
               <textarea
                 className="form-textarea"
                 value={ciphertext}
@@ -96,9 +98,9 @@ export default function DecryptPanel() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">hasło klucza prywatnego (passphrase)</label>
+              <label className="form-label">{t('decrypt.labelPassphrase')}</label>
               <div className="passphrase-hint">
-                pozostaw puste jeśli gpg-agent jest aktywny i klucz jest odblokowany
+                {t('decrypt.passphraseHint')}
               </div>
               <input
                 className="form-input"
@@ -117,10 +119,10 @@ export default function DecryptPanel() {
                 className="btn btn-ghost"
                 onClick={() => { setCiphertext(''); setResult(''); setError(''); setPassphrase(''); }}
               >
-                wyczyść
+                {t('decrypt.clear')}
               </button>
               <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? <><span className="blink">_</span> deszyfrowanie...</> : '🔓 deszyfruj'}
+                {loading ? <><span className="blink">_</span> {t('decrypt.decrypting')}</> : t('decrypt.submit')}
               </button>
             </div>
           </form>
@@ -129,10 +131,10 @@ export default function DecryptPanel() {
             <div className="result-block">
               <div className="result-header">
                 <span className="result-label">
-                  <span className="text-green">✓</span> odszyfrowana wiadomość
+                  <span className="text-green">✓</span> {t('decrypt.resultLabel')}
                 </span>
                 <button className="btn-copy" onClick={handleCopy}>
-                  {copied ? '✓ skopiowano' : 'kopiuj'}
+                  {copied ? t('decrypt.copied') : t('decrypt.copy')}
                 </button>
               </div>
               <textarea
@@ -147,12 +149,12 @@ export default function DecryptPanel() {
 
         <div className="history-panel">
           <div className="history-header">
-            <span className="panel-title">historia</span>
+            <span className="panel-title">{t('decrypt.historyTitle')}</span>
             <span className="history-count">{history.length}</span>
           </div>
           <div className="history-list">
             {history.length === 0 && (
-              <div className="history-empty">brak wpisów</div>
+              <div className="history-empty">{t('decrypt.historyEmpty')}</div>
             )}
             {history.map((item) => (
               <div
@@ -165,7 +167,7 @@ export default function DecryptPanel() {
                 <button
                   className="history-item-delete"
                   onClick={(e) => handleDeleteHistory(e, item.id)}
-                  title="usuń"
+                  title={t('decrypt.historyDelete')}
                 >
                   ×
                 </button>
