@@ -45,3 +45,35 @@ Manage your local **GnuPG keyring**, **generate/import/export** keys, and **encr
 | State | TanStack Query, Zustand |
 | Database | SQLite (rusqlite) |
 | Cryptography | GPG (system calls) |
+
+
+## Usage (GPG / OpenPGP Quick Guide)
+
+GPGmgr works with your **local GnuPG (gpg) keyring**. You can manage **OpenPGP/PGP keys** and **encrypt/decrypt** messages in **ASCII armor** format.
+
+### Keyring: browse, import, export
+- Open **Keys** to list **public/private OpenPGP keys** from the system **GPG keyring**
+- Use **Search** to find keys by **UID / email / fingerprint** *(if implemented)*
+- **Import**: add a key from **ASCII-armored** `.asc` text/file
+- **Export**: copy **public key** (and optionally **private key**) in ASCII armor *(handle private keys carefully)*
+- **Generate**: create new keys (**RSA 2048/4096**, **Ed25519**) and store them in your local keyring
+
+### Encrypt (OpenPGP encryption)
+1. Go to **Encrypt**
+2. Select recipient by **fingerprint** (or UID/email if available)
+3. Paste your message
+4. Copy the output: **ASCII-armored OpenPGP message** (`-----BEGIN PGP MESSAGE-----`)
+5. Send it via email/chat — it stays readable as text, but encrypted
+
+### Decrypt (OpenPGP decryption)
+1. Go to **Decrypt**
+2. Paste an ASCII-armored encrypted message (`BEGIN PGP MESSAGE`)
+3. Enter your **GPG passphrase** if prompted by your private key
+4. Read and copy the decrypted plaintext
+5. *(Optional)* Review **decryption history** stored locally in **SQLite** (for auditing/traceability)
+
+### Troubleshooting
+- Ensure `gpg` is installed and available in `PATH`:
+  ```bash
+  gpg --version
+
