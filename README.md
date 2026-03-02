@@ -1,42 +1,40 @@
-# GPGmgr
+# GPGmgr — Desktop OpenPGP (GnuPG) Key Manager
 
-A desktop GPG key manager built with Tauri 2 + React + TypeScript.
+**GPGmgr** is a **cross-platform desktop GPG/PGP (OpenPGP) key manager** built with **Tauri 2 + React + TypeScript**.
+Manage your local **GnuPG keyring**, **generate/import/export** keys, and **encrypt/decrypt** ASCII-armored messages — all locally.
 
-## Requirements
+> Keywords: GPG, GnuPG, PGP, OpenPGP, key manager, keyring, encryption, decryption, ASCII armor, fingerprint, Tauri, Rust, React, desktop app.
 
-- [Node.js](https://nodejs.org/) (v18+)
-- [Rust](https://rustup.rs/)
-- [GPG](https://gnupg.org/) installed and available in `PATH`
+## Why GPGmgr?
 
-## Running
-
-```bash
-npm install
-npm run tauri dev
-```
-
-### Production build
-
-```bash
-npm run tauri build
-```
+- **Local-first / offline**: works with your **system GnuPG installation** (no cloud storage)
+- **Simple keyring UX**: browse public/private keys, fingerprints, and key details
+- **Encrypt/decrypt quickly**: ASCII-armored text that you can paste into email/chat
+- **Audit-friendly**: optional **local decryption history** stored in **SQLite**
+- **Cross-platform**: Windows / macOS / Linux via **Tauri 2** *(TODO: confirm & list supported OS versions)*
 
 ## Key Features
 
-### Key Management
-- Browse public and private GPG keys from the system keyring
-- Generate new keys (RSA 2048/4096, Ed25519)
-- Import keys from ASCII armor format
-- Export keys (public and private)
-- Delete keys
+### Key Management (GPG keyring)
+- Browse **public and private GPG keys** from the system keyring
+- Generate new keys: **RSA 2048/4096**, **Ed25519**
+- Import keys from **ASCII armor** (`.asc`)
+- Export keys (**public and private**) *(use responsibly)*
+- Delete keys from the keyring
 
-### Encryption
-- Encrypt text messages for a selected recipient (by fingerprint)
-- Output in ASCII armor format
+### Encryption (OpenPGP)
+- Encrypt text messages for a selected recipient (**by fingerprint**)
+- Output in **ASCII armor** (portable text format)
 
 ### Decryption
-- Decrypt GPG-encrypted messages with passphrase input
-- Decryption history stored locally in SQLite
+- Decrypt **GPG-encrypted** ASCII-armored messages with passphrase input
+- **Decryption history** stored locally in **SQLite** (rusqlite)
+
+## Requirements
+
+- **Node.js** v18+
+- **Rust toolchain**
+- **GnuPG (gpg)** installed and available in `PATH`
 
 ## Tech Stack
 
